@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeSentinel</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#07111f;
+    color:#fff;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:30px 20px;
+}
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+h1{margin:0;font-size:32px}
+.subtitle{color:#91a8bd;margin-top:7px}
+
+.badge{
+    border:1px solid #2c6570;
+    color:#5eead4;
+    padding:8px 13px;
+    border-radius:20px;
+    font-size:12px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+}
+
+.card,.panel{
+    background:#0d1b2a;
+    border:1px solid #1d344b;
+    border-radius:16px;
+}
+
+.card{padding:20px}
+
+.label{
+    color:#91a8bd;
+    font-size:13px;
+}
+
+.number{
+    font-size:30px;
+    font-weight:bold;
+    margin-top:8px;
+}
+
+.controls{
+    display:flex;
+    gap:10px;
+    margin:25px 0;
+    flex-wrap:wrap;
+}
+
+input,select{
+    background:#091625;
+    border:1px solid #1d344b;
+    color:white;
+    padding:12px;
+    border-radius:9px;
+}
+
+.panel{padding:20px}
+
+.finding{
+    padding:18px 0;
+    border-bottom:1px solid #1d344b;
+    display:flex;
+    justify-content:space-between;
+    gap:15px;
+}
+
+.finding:last-child{border:0}
+
+.title{font-weight:bold}
+
+.meta{
+    color:#91a8bd;
+    font-size:12px;
+    margin-top:7px;
+}
+
+.pill{
+    padding:5px 9px;
+    border-radius:15px;
+    font-size:11px;
+    font-weight:bold;
+    margin-right:7px;
+}
+
+.high{background:#511927;color:#ffb4c0}
+.medium{background:#4b390d;color:#ffe49a}
+.low{background:#123b2b;color:#b9f6d0}
+
+footer{
+    color:#71879a;
+    font-size:12px;
+    margin-top:20px;
+}
+
+@media(max-width:700px){
+    .stats{grid-template-columns:1fr 1fr}
+    header{flex-direction:column;align-items:flex-start;gap:15px}
+    .finding{flex-direction:column}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+<div>
+<h1>🛡️ CodeSentinel</h1>
+<div class="subtitle">Security Findings & Remediation Dashboard</div>
+</div>
+
+<div class="badge">PORTFOLIO • DEMO DATA</div>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="controls">
+<input id="search" placeholder="Search findings..." oninput="render()">
+
+<select id="severity" onchange="render()">
+<option value="">All Severity</option>
+<option>High</option>
+<option>Medium</option>
+<option>Low</option>
+</select>
+
+<select id="status" onchange="render()">
+<option value="">All Status</option>
+<option>Open</option>
+<option>In Progress</option>
+<option>Resolved</option>
+</select>
+</div>
+
+<div class="panel">
+<h2>Security Findings</h2>
+<div id="findings"></div>
+</div>
+
+<footer>
+Synthetic demo data only • No real security systems connected
+</footer>
+
+</div>
+
+<script>
+
+const findings=[
+{
+id:"CS-1042",
+title:"Authentication endpoint lacks rate limiting",
+severity:"High",
+status:"Open",
+service:"API Gateway"
+},
+{
+id:"CS-1038",
+title:"Dependency has a known security advisory",
+severity:"High",
+status:"In Progress",
+service:"Payments Service"
+},
+{
+id:"CS-1029",
+title:"Verbose logging in production profile",
+severity:"Medium",
+status:"Open",
+service:"User Service"
+},
+{
+id:"CS-1017",
+title:"Missing security headers",
+severity:"Medium",
+status:"Resolved",
+service:"Web Frontend"
+},
+{
+id:"CS-1008",
+title:"Unused debug configuration",
+severity:"Low",
+status:"Resolved",
+service:"Notification Service"
+}
+];
+
+function render(){
+
+const search=document.getElementById("search").value.toLowerCase();
+const severity=document.getElementById("severity").value;
+const status=document.getElementById("status").value;
+
+const filtered=findings.filter(f=>
+(f.title+" "+f.id+" "+f.service).toLowerCase().includes(search) &&
+(!severity || f.severity===severity) &&
+(!status || f.status===status)
+);
+
+document.getElementById("stats").innerHTML=`
+
+<div class="card">
+<div class="label">Open Findings</div>
+<div class="number">${findings.filter(f=>f.status!=="Resolved").length}</div>
+</div>
+
+<div class="card">
+<div class="label">High Risk</div>
+<div class="number">${findings.filter(f=>f.severity==="High" && f.status!=="Resolved").length}</div>
+</div>
+
+<div class="card">
+<div class="label">Resolved</div>
+<div class="number">${findings.filter(f=>f.status==="Resolved").length}</div>
+</div>
+
+<div class="card">
+<div class="label">Total Findings</div>
+<div class="number">${findings.length}</div>
+</div>
+`;
+
+document.getElementById("findings").innerHTML=
+
+filtered.length ?
+
+filtered.map((f,index)=>`
+
+<div class="finding">
+
+<div>
+<span class="pill ${f.severity.toLowerCase()}">
+${f.severity}
+</span>
+
+<span class="title">
+${f.id} — ${f.title}
+</span>
+
+<div class="meta">
+Service: ${f.service}
+</div>
+</div>
+
+<select onchange="findings[${findings.indexOf(f)}].status=this.value;render()">
+
+<option ${f.status==="Open"?"selected":""}>Open</option>
+
+<option ${f.status==="In Progress"?"selected":""}>
+In Progress
+</option>
+
+<option ${f.status==="Resolved"?"selected":""}>
+Resolved
+</option>
+
+</select>
+
+</div>
+
+`).join("")
+
+:
+
+"<p style='color:#91a8bd'>No findings found.</p>";
+
+}
+
+render();
+
+</script>
+
+</body>
+</html>
